@@ -1,8 +1,8 @@
-import type { Meta, StoryObj } from '@storybook/react';
-import { Input } from './';
+import type { Meta, StoryObj } from "@storybook/react";
+import { Input } from "./";
 
 const meta: Meta<typeof Input> = {
-  title: 'Input',
+  title: "Input",
   component: Input,
 };
 
@@ -11,6 +11,6 @@ type Story = StoryObj<typeof Input>;
 
 export const Default: Story = {
   args: {
-    placeholder:'Type something'
+    placeholder: "Type something",
   },
 };

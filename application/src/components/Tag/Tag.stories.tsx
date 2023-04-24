@@ -24,7 +24,7 @@ export const Default: Story = {
 
 export const WithEmoticon: Story = {
   args: {
-    label: <MoodIcon sx={{color: "#fff"}} />,
+    label: <MoodIcon sx={{ color: "#fff" }} />,
     onDelete: () => alert("Delete Tag"),
     onEdit: () => alert("Edit Tag"),
   },

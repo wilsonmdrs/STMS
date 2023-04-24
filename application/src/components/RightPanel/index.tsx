@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { Container } from "../Container";
 import CircularProgress from "@mui/material/CircularProgress";
 import {
@@ -7,10 +7,8 @@ import {
   PlusIcon,
   ResultContainer,
 } from "./styles";
-import { Search } from "../Search";
 import { Tag } from "../Tag";
-import { Pagination } from "@mui/material";
-import { useQuery, useQueryClient} from "react-query";
+import { useQuery } from "react-query";
 import { api, TagItem } from "../../api";
 import { TagModal } from "./TagModal";
 import { toast } from "react-toastify";
@@ -26,29 +24,18 @@ export enum ActionType {
   "none",
 }
 
-interface Modal {
-  open: boolean;
-  action: ActionType;
-  tag: TagItem;
-}
-
 export const RightPanel: React.FC = () => {
-  const { getValues, setValue } = useDataContext()
-  const searchTerm = getValues('searchTerm')
-  const page = getValues('page')
+  const { getValues, setValue } = useDataContext();
+  const searchTerm = getValues("searchTerm");
+  const page = getValues("page");
+  const modal = getValues('modal')
   const { data, isLoading, isError, error, refetch } = useQuery(
     ["getAll", page],
-    () => api.get(searchTerm, page),
-    );
-    console.log(data)
-    const [modal, setModal] = useState<Modal>({
-      open: false,
-      action: ActionType.none,
-      tag: { label: "" },
-    });
-    
+    () => api.get(searchTerm, page)
+  );
+
   const onCloseModal = () => {
-    setModal({ open: false, action: ActionType.none, tag: { label: "" } });
+    setValue('modal', { open: false, action: ActionType.none, tag: { label: "" } });
   };
 
   useEffect(() => {
@@ -61,39 +48,47 @@ export const RightPanel: React.FC = () => {
     if (refetch) {
       const refetchData = setTimeout(() => {
         refetch();
-        setValue('page', 1);
+        setValue("page", 1);
       }, 3000);
       return () => clearTimeout(refetchData);
     }
-  }, [searchTerm, refetch]);
+  }, [searchTerm, refetch, setValue]);
 
   return (
     <Container width="70%" height="85vh" flexDirection="column">
       <OptionsContainer>
         <AddTagButton
           onClick={() =>
-            setModal({ open: true, action: ActionType.new, tag: { label: "" } })
+            setValue('modal', { open: true, action: ActionType.new, tag: { label: "" } })
           }
           endIcon={<PlusIcon />}
         >
           New Tag
         </AddTagButton>
       </OptionsContainer>
-      <TagSearch refetch={() => refetch()}/>
+      <TagSearch refetch={() => refetch()} />
       <ResultContainer isLoading={isLoading}>
-        {(isLoading) ? (
+        {isLoading ? (
           <CircularProgress />
+        ) : !data?.tags.length ? (
+          <Text
+            fontSize={12}
+            textAlign={"center"}
+            width={"100%"}
+            marginTop={"50px"}
+          >
+            Sorry! No Tags Founded &#x1F614;
+          </Text>
         ) : (
-          !data?.tags.length ? <Text fontSize={12} textAlign={'center'} width={'100%'} marginTop={'50px'}>Sorry! No Tags Founded &#x1F614;</Text> : 
           data?.tags?.map((tag: TagItem) => (
             <Tag
               key={tag.id}
               label={tag.label}
               onDelete={() =>
-                setModal({ open: true, action: ActionType.delete, tag: tag })
+                setValue('modal', { open: true, action: ActionType.delete, tag: tag })
               }
               onEdit={() =>
-                setModal({ open: true, action: ActionType.edit, tag: tag })
+                setValue('modal', { open: true, action: ActionType.edit, tag: tag })
               }
             />
           ))

@@ -1,17 +1,17 @@
-import express, { Request, Response } from 'express';
-import jsonfile from 'jsonfile';
-import cors from 'cors';
-import { faker } from '@faker-js/faker'
+import express, { Request, Response } from "express";
+import jsonfile from "jsonfile";
+import cors from "cors";
+import { faker } from "@faker-js/faker";
 
 const app = express();
 const port = 5000;
 const corsOptions = {
-  origin: 'http://localhost:3000',
+  origin: "http://localhost:3000",
 };
 app.use(express.json());
 app.use(cors(corsOptions));
 
-const tagFile = './src/tags.json';
+const tagFile = "./src/tags.json";
 
 interface Tag {
   id: string;
@@ -19,46 +19,46 @@ interface Tag {
 }
 
 interface Data {
-  totalData:number,
-  tags:Tag[]
-  recent:Tag[]
+  totalData: number;
+  tags: Tag[];
+  recent: Tag[];
 }
 
 function generateId(): string {
   const timestamp = Date.now();
-  const randomChars = Math.floor(Math.random() * 1000000).toString().padStart(6, '0');
+  const randomChars = Math.floor(Math.random() * 1000000)
+    .toString()
+    .padStart(6, "0");
   const id = `${timestamp}${randomChars}`;
   return id;
 }
 
 function setInitialData() {
-  
   jsonfile.readFile(tagFile, (err, data: Data) => {
     if (err) throw err;
 
     const tags: Tag[] = Array.from(Array(100)).map((_, i) => ({
       id: generateId(),
-      label: faker.random.word(),
+      label: faker.random.word().toUpperCase(),
     }));
-    data.tags = tags
-    data.totalData = tags.length
-    data.recent = []
+    data.tags = tags;
+    data.totalData = tags.length;
+    data.recent = [];
 
-    jsonfile.writeFile(tagFile, data)
+    jsonfile.writeFile(tagFile, data);
   });
 }
-setInitialData()
+setInitialData();
 
-app.get('/recent', (req: Request, res:Response) => {
-  
+app.get("/recent", (req: Request, res: Response) => {
   jsonfile.readFile(tagFile, (err, data: Data) => {
     if (err) throw err;
-    const result = data.recent
-    res.send(result)
-  })
-})
+    const result = data.recent;
+    res.send(result);
+  });
+});
 
-app.get('/tag', (req: Request, res: Response) => {
+app.get("/tag", (req: Request, res: Response) => {
   jsonfile.readFile(tagFile, (err, data: Data) => {
     if (err) throw err;
     const queryLabel = String(req.query.label);
@@ -77,89 +77,93 @@ app.get('/tag', (req: Request, res: Response) => {
           page,
           limit,
           totalPages,
-          tags:results
+          tags: results,
         });
       });
     } else {
-      const tags = data.tags.filter(tag => tag.label.includes(queryLabel));
+      const tags = data.tags.filter((tag) => tag.label.includes(queryLabel));
       const results = tags.slice(startIndex, endIndex);
-      console.log(results)
       const totalPages = Math.ceil(tags.length / limit);
       res.send({
         totalData: tags.length,
         page,
         totalPages,
         limit,
-        tags:results
+        tags: results,
       });
     }
   });
 });
 
-app.post('/tag', (req: Request, res: Response) => {
+app.post("/tag", (req: Request, res: Response) => {
   jsonfile.readFile(tagFile, (err, data: Data) => {
     if (err) throw err;
 
-    const isDuplicated = data.tags.some(tag => tag.label === req.body.label)
+    const isDuplicated = data.tags.some((tag) => tag.label === req.body.label);
 
     if (isDuplicated) {
-      res.status(409).send(`the tag "${req.body.label}" already exist. Try another one!`)
+      res
+        .status(409)
+        .send(`the tag "${req.body.label}" already exist. Try another one!`);
     } else {
       const newTag: Tag = {
         id: generateId(),
         label: req.body.label,
       };
       data.tags.push(newTag);
-      data.recent.unshift(newTag)
-      data.totalData = data.totalData + 1
-      if (data.recent.length > 15) data.recent.pop()
-  
+      data.recent.unshift(newTag);
+      data.totalData = data.totalData + 1;
+      if (data.recent.length > 15) data.recent.pop();
+
       jsonfile.writeFile(tagFile, data, (err) => {
         if (err) throw err;
-        res.send('Tag added successfully');
+        res.send("Tag added successfully");
       });
     }
   });
 });
 
-app.put('/tag/:id', (req: Request, res: Response) => {
+app.put("/tag/:id", (req: Request, res: Response) => {
   jsonfile.readFile(tagFile, (err, data: Data) => {
     if (err) throw err;
 
     const tagId = String(req.params.id);
-    const tag = data.tags.find(p => p.id === tagId);
+    const tag = data.tags.find((p) => p.id === tagId);
+    const recentTag = data.recent.find((p) => p.id === tagId);
+
+    if (recentTag) {
+      recentTag.label = req.body.label;
+    }
 
     if (!tag) {
-      res.status(404).send('Tag not found');
+      res.status(404).send("Tag not found");
     } else {
-      console.log(req)
       tag.label = req.body.label;
-
       jsonfile.writeFile(tagFile, data, (err) => {
         if (err) throw err;
-        res.send('Tag updated successfully');
+        res.send("Tag updated successfully");
       });
     }
   });
 });
 
-app.delete('/tag/:id', (req: Request, res: Response) => {
+app.delete("/tag/:id", (req: Request, res: Response) => {
   jsonfile.readFile(tagFile, (err, data: Data) => {
     if (err) throw err;
 
     const tagId = String(req.params.id);
-    const index = data.tags.findIndex(p => p.id === tagId);
-
+    const index = data.tags.findIndex((p) => p.id === tagId);
+    const recents = data.recent.filter((p) => p.id !== tagId);
     if (index === -1) {
-      res.status(404).send('Tag not found');
+      res.status(404).send("Tag not found");
     } else {
       data.tags.splice(index, 1);
-      data.totalData = data.totalData - 1
-
+      data.recent = recents;
+      data.totalData = data.totalData - 1;
 
       jsonfile.writeFile(tagFile, data, (err) => {
         if (err) throw err;
-        res.send('Tag deleted successfully');
+        res.send("Tag deleted successfully");
       });
     }
   });

@@ -1,8 +1,8 @@
-import type { Meta, StoryObj } from '@storybook/react';
-import { Search } from './';
+import type { Meta, StoryObj } from "@storybook/react";
+import { Search } from "./";
 
 const meta: Meta<typeof Search> = {
-  title: 'Search',
+  title: "Search",
   component: Search,
 };
 
@@ -11,6 +11,6 @@ type Story = StoryObj<typeof Search>;
 
 export const Default: Story = {
   args: {
-    placeholder:'Type to search a tag'
+    placeholder: "Type to search a tag",
   },
 };

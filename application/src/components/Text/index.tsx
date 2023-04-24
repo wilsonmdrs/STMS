@@ -1,2 +1,2 @@
-import { Text } from "./styles"
-export { Text }
+import { Text } from "./styles";
+export { Text };

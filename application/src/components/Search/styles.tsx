@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import { Input } from '../Input'
+import { Input } from "../Input";
 const shadow = `
     -webkit-box-shadow: 0px 2px 4px 1px rgba(0, 0, 0, 0.16);
     -moz-box-shadow: 0px 2px 4px 1px rgba(0, 0, 0, 0.16);

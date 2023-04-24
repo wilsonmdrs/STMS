@@ -9,8 +9,8 @@ import {
 } from "./styles";
 import { ModalProps } from "@mui/material";
 
-interface Props extends Omit<ModalProps, 'children'> {
-    children:React.ReactElement[] | React.ReactElement
+interface Props extends Omit<ModalProps, "children"> {
+  children: React.ReactElement[] | React.ReactElement;
 }
 
 const Modal: React.FC<Props> = ({ children, ...props }) => {
@@ -21,7 +21,6 @@ const Modal: React.FC<Props> = ({ children, ...props }) => {
           return React.cloneElement(child, {
             onClose: props.onClose,
           });
-    
         })}
       </ModalContent>
     </ModalContainer>
@@ -30,10 +29,13 @@ const Modal: React.FC<Props> = ({ children, ...props }) => {
 
 interface ModalHeaderProps {
   children: React.ReactNode;
-  onClose?:() => void;
+  onClose?: () => void;
 }
 
-const ModalHeader: React.FC<ModalHeaderProps> = ({ children, onClose = () => {} }) => {
+const ModalHeader: React.FC<ModalHeaderProps> = ({
+  children,
+  onClose = () => {},
+}) => {
   return (
     <ModalHeaderContainer>
       {children}
